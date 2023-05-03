@@ -1,4 +1,5 @@
 import numpy as np
+import torch
 import matplotlib.pyplot as plt
 
 
@@ -31,12 +32,12 @@ def visualise_predicted_pts_from_tensor_batch(img, pts, y_pts):
     for i in range(img.shape[0]):
         #show image and points as subplot
         fig.add_subplot(2, img.shape[0], i+1)
-        plt.title('pred')
+        plt.title('truth')
         plt.imshow(img[i])
         plt.plot(pts[i, :, 0], pts[i, :, 1], '+r', ms=7)
         # plot on the second row
         fig.add_subplot(2, img.shape[0], i + 5)
-        plt.title('truth')
+        plt.title('pred')
         plt.imshow(img[i])
         plt.plot(y_pts[i, :, 0], y_pts[i, :, 1], '+y', ms=7)
     plt.show()
@@ -45,8 +46,21 @@ def flatten_coords_in_batch_tensor(batch):
     return batch.view(batch.shape[0], -1)
 
 def unflatten_coords_in_batch_tensor(batch, num_of_points):
-    return batch.view(batch.shape[0], num_of_points, 2)
+    # unflatten the batch of points
+    return batch.view(batch.shape[0], num_of_points, -1)
 
+
+def get_mean_and_std_of_dataloader(dataloader):
+    channel_sum, channel_squared_sum, num_batches = 0, 0, 0
+    for data in dataloader:
+        image = data['image']
+        channel_sum += torch.mean(image, dim=[0, 2, 3])
+        channel_squared_sum += torch.mean(image ** 2, dim=[0, 2, 3])
+        num_batches += 1
+
+    mean = channel_sum / num_batches
+    std = (channel_squared_sum / num_batches - mean ** 2) ** 0.5
+    return mean, std
 def save_as_csv(points, location='.'):
   """
   Save the points out as a .csv file
