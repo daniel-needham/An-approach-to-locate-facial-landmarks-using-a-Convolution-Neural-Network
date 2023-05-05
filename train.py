@@ -4,6 +4,7 @@ import transforms
 from transforms import *
 from utility import *
 from model import ConvNet
+from model2 import ConvNet2
 from dataset import FaceAlignmentDataset
 from torch.utils.data import DataLoader as Dataloader
 import torch
@@ -14,8 +15,8 @@ from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter('runs/face_alignment_experiment_1')
 
 # hyperparameters
-epochs = 1
-learning_rate = 0.01
+epochs = 10
+learning_rate = 0.1
 momentum = 0.9
 batch_size = 4
 scale_down = 2
@@ -27,8 +28,10 @@ train_std = torch.tensor([77.5477, 68.5109, 66.8811])
 test_mean = torch.tensor([122.3381,  97.8966,  84.6461])
 test_std = torch.tensor([77.6566, 68.7760, 66.5846])
 
-train_dataset = FaceAlignmentDataset('training_images_full.npz', train=True, transform=Compose([Downscale(2),ToTensor(), Normalise(train_mean, train_std)]))
-test_dataset = FaceAlignmentDataset('training_images_full.npz', train=False, transform=Compose([Downscale(2), ToTensor(), Normalise(test_mean, test_std)]))
+train_dataset = FaceAlignmentDataset('training_images_full.npz', train=True, transform=Compose([Downscale(2),ToTensor(), Normalise(train_mean, train_std)]), )
+#test_dataset = FaceAlignmentDataset('training_images_full.npz', train=False, transform=Compose([Downscale(2), ToTensor(), Normalise(test_mean, test_std)]), length=4)
+test_dataset = FaceAlignmentDataset('training_images_full.npz', train=True, transform=Compose([Downscale(2),ToTensor(), Normalise(train_mean, train_std)]), )
+
 
 train_loader = Dataloader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 test_loader = Dataloader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
@@ -36,9 +39,11 @@ test_loader = Dataloader(test_dataset, batch_size=batch_size, shuffle=True, num_
 
 # define our model
 model = ConvNet(image_dims, num_of_points)
+#model = ConvNet2()
 
 criterion = nn.MSELoss()
-optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
+optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum, weight_decay=1e-5)
+#optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # Training loop
 model.train() # Set the model to training mode
@@ -55,7 +60,7 @@ for epoch in range(epochs):
         optimizer.step() # Update the model weights
 
         running_loss += loss.item()
-        if batch_i % 100 == 9:  # every 10 mini-batches...
+        if batch_i % 100 == 9:  # every 100 mini-batches...
 
             # ...log the running loss
             writer.add_scalar('training loss',
@@ -76,11 +81,16 @@ with torch.no_grad():
         loss = criterion(outputs, targets) # Compute the loss
         total_loss += loss.item()
         # Visualize the 50th batch
-        if batch_i % 50 == 0:
+        if batch_i % 200 == 0:
+            print(f'targets: {targets.shape} outputs: {outputs.shape}')
+            print('inputs')
+            [print(inp) for inp in inputs]
+            print('outputs')
+            [print(out) for out in outputs]
             targets = unflatten_coords_in_batch_tensor(targets, num_of_points)
             outputs = unflatten_coords_in_batch_tensor(outputs, num_of_points)
-            visualise_predicted_pts_from_tensor_batch(original_inputs, targets, outputs)
-
+            #visualise_predicted_pts_from_tensor_batch(original_inputs, targets, outputs)
+            visualise_pts_from_tensor(original_inputs, outputs)
 
     avg_loss = total_loss / len(test_loader)
     print(f"Test Loss: {avg_loss:.4f}")

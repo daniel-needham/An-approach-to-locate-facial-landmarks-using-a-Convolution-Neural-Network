@@ -11,11 +11,14 @@ def visualise_pts(img, pts):
 
 def visualise_pts_from_tensor(img, pts):
   import matplotlib.pyplot as plt
-  img = img.numpy().transpose((1, 2, 0))
+  print(img.shape)
+  img = img.numpy().transpose((0,2, 3, 1))
+  img = np.squeeze(img)
   #convert img to int
   img = img.astype(np.uint8)
   plt.imshow(img)
   pts = pts.numpy()
+  pts = np.squeeze(pts)
   plt.plot(pts[:, 0], pts[:, 1], '+r', ms=7)
   plt.show()
 

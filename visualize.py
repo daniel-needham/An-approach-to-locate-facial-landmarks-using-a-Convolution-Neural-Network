@@ -23,6 +23,5 @@ for i_batch, sample_batched in enumerate(dataloader):
     points_batch = sample_batched['points']
 
     if i_batch == 0:
-        visualise_predicted_pts_from_tensor_batch(image_batch, points_batch, points_batch)
-        print(image_batch[0])
+        visualise_predicted_pts_from_tensor_batch(image_batch, points_batch, unflatten_coords_in_batch_tensor(flatten_coords_in_batch_tensor(points_batch),44))
         break
