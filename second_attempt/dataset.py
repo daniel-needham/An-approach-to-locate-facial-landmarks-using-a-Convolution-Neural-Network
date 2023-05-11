@@ -7,7 +7,10 @@ class FaceAlignmentDataset(Dataset):
         data = np.load(data_filename, allow_pickle=True)
 
         self.images = data['images']
-        self.landmarks = data['points']
+        if data.__contains__('points'):
+            self.landmarks = data['points']
+        else:
+            self.landmarks = np.zeros((len(self.images)))
         self.transform = transform
 
         if length is not None:

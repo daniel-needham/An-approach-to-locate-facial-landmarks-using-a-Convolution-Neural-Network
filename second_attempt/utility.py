@@ -36,6 +36,11 @@ def display_both_points_from_normal(image, predict, landmarks, norm=True, image_
 
 
 def unnormalise(image, landmarks):
+    """
+    :param image: image tensor
+    :param landmarks: image landmarks
+    :return: unnormalised landmarks scaled to the image size
+    """
     landmarks = landmarks.numpy()
     landmarks = (landmarks + 0.5) * image.shape[1]
     return landmarks
@@ -92,6 +97,8 @@ def euclid_dist(pred_pts, gt_pts):
     gt_pts = np.reshape(gt_pts, (-1, 2))
     return np.mean(np.sqrt(np.sum(np.square(pred_pts - gt_pts), axis=-1)))
 
+
+# provided functions
 def extract_subset_of_points(pts):
   indices = (20, 29, 16, 32, 38)
   if len(pts.shape) == 3:
@@ -103,3 +110,14 @@ def visualise_pts(img, pts):
   plt.imshow(img)
   plt.plot(pts[:, 0], pts[:, 1], '+r', ms=7)
   plt.show()
+
+
+def save_as_csv(points, location = '.'):
+    """
+    Save the points out as a .csv file
+    :param points: numpy array of shape (no_test_images, no_points, 2) to be saved
+    :param location: Directory to save results.csv in. Default to current working directory
+    """
+    assert points.shape[0]==554, 'wrong number of image points, should be 554 test images'
+    assert np.prod(points.shape[1:])==44*2, 'wrong number of points provided. There should be 34 points with 2 values (x,y) per point'
+    np.savetxt(location + '/results.csv', np.reshape(points, (points.shape[0], -1)), delimiter=',')

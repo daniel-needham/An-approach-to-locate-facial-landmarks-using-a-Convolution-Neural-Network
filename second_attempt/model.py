@@ -16,7 +16,7 @@ class ConvNet(nn.Module):
         self.fc1 = nn.Linear(4096, 1024)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(1024, num_of_points * 2)
-        self.sig = nn.Sigmoid(, in
+        self.sig = nn.Sigmoid()
         self.bn = nn.BatchNorm2d(64)
 
     def forward(self, x):

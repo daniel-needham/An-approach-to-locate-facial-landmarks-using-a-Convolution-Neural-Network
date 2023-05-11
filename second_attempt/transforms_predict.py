@@ -76,8 +76,9 @@ class Transforms():
         image = self.greyscale(image)
         image, landmarks = self.downscale(image, landmarks, 2)
         image = self.gaussian_blur(image)
-        image = self.colour_jitter(image)
-        image, landmarks = self.random_rotate(image, landmarks)
+        #image = self.colour_jitter(image)
+        #image, landmarks = self.random_horizontal_flip(image, landmarks)
+        #image, landmarks = self.random_rotate(image, landmarks)
 
 
         image = TF.to_tensor(image)
