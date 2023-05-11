@@ -16,7 +16,7 @@ class ConvNet(nn.Module):
         self.fc1 = nn.Linear(4096, 1024)
         self.relu = nn.ReLU()
         self.fc2 = nn.Linear(1024, num_of_points * 2)
-        self.sig = nn.Sigmoid()
+        self.sig = nn.Sigmoid(, in
         self.bn = nn.BatchNorm2d(64)
 
     def forward(self, x):
@@ -43,11 +43,10 @@ class ConvNet(nn.Module):
         # layer 5
         out = self.relu(self.conv5(out))
         out = nn.BatchNorm2d(256)(out)
-        #out  = self.max_pool(out)
+
 
         # layer 6
         out = out.reshape(out.size(0), -1)
         out = self.sig(self.fc1(out))
-        #out = self.relu(self.fc1(out))
         out = self.fc2(out)
         return out

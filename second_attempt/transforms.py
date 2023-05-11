@@ -2,9 +2,11 @@ import cv2
 import torch
 import torchvision.transforms.functional as TF
 from torchvision.transforms import ColorJitter
+from scipy.ndimage import gaussian_filter
 import numpy as np
 import cv2
 import PIL
+
 
 class Transforms():
     def __init__(self):
@@ -27,7 +29,7 @@ class Transforms():
 
     def colour_jitter(self, image):
         image = PIL.Image.fromarray(image)
-        colour_jitter = ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.1)
+        colour_jitter = ColorJitter(brightness=0.3, contrast=0.3)
         image = colour_jitter(image)
         image = np.array(image)
         return image
@@ -58,10 +60,24 @@ class Transforms():
             landmarks[:,1] = image.shape[0] - landmarks[:,1]
         return image, landmarks
 
+    def random_horizontal_flip(self, image, landmarks):
+        if np.random.rand() > 0.1:
+            #numpy flip
+            image = np.flip(image,axis=1)
+            image = np.ascontiguousarray(image)
+            #flip the points horizontally
+            landmarks[:,0] = image.shape[1] - landmarks[:,0]
+        return image, landmarks
+
+    def gaussian_blur(self, image):
+        image = gaussian_filter(image, sigma=1.5)
+        return image
     def __call__(self, image, landmarks):
         image = self.greyscale(image)
         image, landmarks = self.downscale(image, landmarks, 2)
+        image = self.gaussian_blur(image)
         image = self.colour_jitter(image)
+        #image, landmarks = self.random_horizontal_flip(image, landmarks)
         image, landmarks = self.random_rotate(image, landmarks)
 
 
