@@ -2,12 +2,25 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 def display(image, landmarks):
+    """
+    Dispaly image with landmarks
+    :param image:
+    :param landmarks:
+    :return: None
+    """
+
     plt.figure(figsize=(10, 10))
     plt.imshow(image.numpy().squeeze(), cmap='gray')
     plt.scatter(landmarks[:, 0], landmarks[:, 1], s=20, marker='X', c='r')
     plt.show()
 
 def display_from_normalised(image,landmarks):
+    """
+    Display image with landmarks from normalised coordinates
+    :param image:
+    :param landmarks:
+    :return: None
+    """
     plt.figure(figsize=(10, 10))
     plt.imshow(image.numpy().squeeze(), cmap='gray')
     landmarks = unnormalise(image, landmarks)
@@ -18,6 +31,15 @@ def display_from_normalised(image,landmarks):
     plt.show()
 
 def display_both_points_from_normal(image, predict, landmarks, norm=True, image_tensor=True):
+    """
+    Display image with predicted and actual landmarks from normalised coordinates
+    :param image:
+    :param predict:
+    :param landmarks:
+    :param norm:
+    :param image_tensor:
+    :return: None
+    """
     plt.figure(figsize=(10, 10))
     if image_tensor:
         image = image.numpy().squeeze()

@@ -1,4 +1,3 @@
-
 import torch.nn as nn
 
 
@@ -28,8 +27,6 @@ class ConvNet(nn.Module):
         out = self.relu(self.conv2(out))
         out = nn.BatchNorm2d(192)(out)
         out  = self.max_pool(out)
-
-
 
         # layer 3
         out = self.relu(self.conv3(out))

@@ -13,6 +13,8 @@ import os
 
 batch_size = 1
 
+""" Visualise example images """
+
 # setup dataset and dataloader
 dataset = FaceAlignmentDataset('examples.npz',transform=Transforms())
 dataloader = Dataloader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)

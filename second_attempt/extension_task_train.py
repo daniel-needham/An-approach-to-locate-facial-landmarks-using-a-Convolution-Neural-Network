@@ -36,9 +36,8 @@ val_loader = Dataloader(val_dataset, batch_size=batch_size, shuffle=True, num_wo
 test_loader = Dataloader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
 
-
+# set up model and loss function and back prop
 model = ConvNet(image_dims, num_of_points)
-#model = ConvNet()
 criterion = nn.MSELoss()
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum) #, weight_decay=1e-5
 #optimizer = optim.Adam(model.parameters(), lr=learning_rate)
@@ -57,7 +56,7 @@ for epoch in range(1, epochs + 1):
     model.train()
     for batch_i, batch in enumerate(train_loader):
         image, image_original, landmarks = batch
-        landmarks = landmarks.view(landmarks.size(0), -1)
+        landmarks = landmarks.view(landmarks.size(0), -1) # flatten landmarks
         outputs = model(image)
 
         #clear gradients
@@ -84,12 +83,11 @@ for epoch in range(1, epochs + 1):
     with torch.no_grad():
         for batch_i, batch in enumerate(val_loader):
             image, image_original, landmarks = batch
-            landmarks = landmarks.view(landmarks.size(0), -1)
+            landmarks = landmarks.view(landmarks.size(0), -1) # flatten landmarks
             outputs = model(image)
 
             # find loss
             loss_valid_step = criterion(outputs, landmarks)
-
 
             loss_valid += loss_valid_step.item()
             running_loss = loss_valid / (batch_i + 1)
@@ -119,7 +117,7 @@ for epoch in range(1, epochs + 1):
 print('Finished Training')
 print('Starting Testing')
 
-#
+# set up arrays for running mean euclidean distance
 mean_euclidean_distance = []
 
 model.eval()
@@ -150,7 +148,7 @@ with torch.no_grad():
             unnorm_outputs = unnormalise(image[i], outputs[i])
             unnorm_landmarks = unnormalise(image[i], landmarks[i])
             ed = euclid_dist(unnorm_outputs, unnorm_landmarks)
-
+        # display good / bad predictions
             if ed > 10:
                 display_both_points_from_normal(image[i], outputs[i], landmarks[i])
             if ed < 1.5:

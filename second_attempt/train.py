@@ -4,7 +4,7 @@ from transforms import Transforms
 import matplotlib.pyplot as plt
 from utility import *
 from torch.utils.data import DataLoader as Dataloader
-from model2 import ConvNet
+from model import ConvNet
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
@@ -12,7 +12,7 @@ import os
 
 
 # hyperparameters
-epochs = 4
+epochs = 15
 learning_rate = 0.1
 momentum = 0.9
 batch_size = 1
@@ -34,13 +34,14 @@ val_loader = Dataloader(val_dataset, batch_size=batch_size, shuffle=True, num_wo
 test_loader = Dataloader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=0)
 
 # setup model
-model = ConvNet()# image_dims, num_of_points
+model = ConvNet(image_dims, num_of_points)#
 criterion = nn.MSELoss()
 optimizer = optim.SGD(model.parameters(), lr=learning_rate, momentum=momentum)
 #optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
 # set min loss
 loss_min = np.inf
+
 # set up arrays for running train/validation loss
 train_loss_epoch = []
 valid_loss_epoch = []
@@ -54,7 +55,7 @@ for epoch in range(1, epochs + 1):
     model.train()
     for batch_i, batch in enumerate(train_loader):
         image, image_original, landmarks = batch
-        landmarks = landmarks.view(landmarks.size(0), -1)
+        landmarks = landmarks.view(landmarks.size(0), -1) # flatten landmarks
         outputs = model(image)
 
         #clear gradients
@@ -81,13 +82,13 @@ for epoch in range(1, epochs + 1):
     with torch.no_grad():
         for batch_i, batch in enumerate(val_loader):
             image, image_original, landmarks = batch
-            landmarks = landmarks.view(landmarks.size(0), -1)
+            landmarks = landmarks.view(landmarks.size(0), -1) # flatten landmarks
             outputs = model(image)
 
             # find loss
             loss_valid_step = criterion(outputs, landmarks)
 
-
+            # update running validation loss
             loss_valid += loss_valid_step.item()
             running_loss = loss_valid / (batch_i + 1)
 
@@ -116,7 +117,7 @@ for epoch in range(1, epochs + 1):
 print('Finished Training')
 print('Starting Testing')
 
-#
+# set up arrays for running mean euclidean distance
 mean_euclidean_distance = []
 
 model.eval()
@@ -130,9 +131,11 @@ with torch.no_grad():
         # find loss
         loss_test_step = criterion(outputs, landmarks)
 
+        # update running test loss
         total_loss += loss_test_step.item()
         running_loss = total_loss / (batch_i + 1)
 
+        # reshape outputs and landmarks to be 2d
         outputs = outputs.view(outputs.size(0), -1, 2)
         landmarks = landmarks.view(landmarks.size(0), -1, 2)
 
